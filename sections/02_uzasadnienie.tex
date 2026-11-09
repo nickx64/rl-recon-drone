@@ -1,0 +1,26 @@
+\section{Uzasadnienie zastosowania uczenia się ze wzmocnieniem}
+\label{sec:uzasadnienie}
+
+Problem nie jest zadaniem klasyfikacji ani jednorazowej optymalizacji, ponieważ:
+
+\begin{enumerate}
+  \item \textbf{Decyzje są sekwencyjne} -- misja składa się z kilkudziesięciu
+        kroków, a jakość pojedynczego ruchu zależy od całej dalszej trajektorii.
+  \item \textbf{Decyzje zmieniają przyszły stan środowiska} -- zużycie energii
+        ogranicza dalsze możliwości, a sfotografowanie celu~1 trwale zmienia
+        mapę (zamknięcie korytarza $Z$). Kolejność odwiedzania celów ma więc
+        znaczenie, a zachłanne wybieranie najbliższego celu może prowadzić
+        do sytuacji bez wyjścia.
+  \item \textbf{Występuje niepewność} -- wykrycie w strefie radarowej jest
+        zdarzeniem losowym, którego prawdopodobieństwo nie jest znane agentowi.
+  \item \textbf{Występuje konflikt celów} -- krótsza trasa przez strefę
+        radarową oznacza mniejsze zużycie energii, ale większe ryzyko;
+        objazd jest bezpieczniejszy, ale może wymagać dodatkowego ładowania.
+  \item \textbf{Nagroda jest opóźniona} -- główna nagroda za sukces pojawia
+        się dopiero po powrocie do bazy, więc agent musi przypisać zasługę
+        wcześniejszym decyzjom (np. odwiedzeniu stacji ładowania).
+\end{enumerate}
+
+Te cechy odpowiadają klasycznemu sformułowaniu problemu decyzyjnego
+Markowa~\cite{sutton2018}, w którym agent uczy się polityki maksymalizującej
+oczekiwany zdyskontowany zwrot bez znajomości modelu przejść.

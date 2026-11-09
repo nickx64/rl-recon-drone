@@ -1,0 +1,15 @@
+\section{Agent bazowy}
+\label{sec:baseline}
+
+Planowane są dwa agenty bazowe:
+\begin{itemize}
+  \item \textbf{agent losowy} -- wybiera akcję z rozkładu jednostajnego;
+        wyznacza dolną granicę wyników,
+  \item \textbf{agent zachłanny} -- wyznacza najkrótszą ścieżkę (BFS) do
+        najbliższego niesfotografowanego celu, a po zebraniu wszystkich celów
+        -- do bazy; ignoruje baterię, radary i patrol. Jest to uczciwy
+        punkt odniesienia, ponieważ reprezentuje „rozsądną'' strategię
+        bez uczenia.
+\end{itemize}
+
+\todo{Etap E2: wyniki agentów bazowych na każdej mapie.}

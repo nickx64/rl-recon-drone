@@ -1,0 +1,53 @@
+\section{Opis problemu}
+\label{sec:problem}
+
+\paragraph{Repozytorium projektu.} Projekt jest realizowany w publicznym
+repozytorium GitHub:
+\url{https://github.com/nickx64/rl-recon-drone}.
+
+Dron zwiadowczy startuje z bazy umieszczonej na dwuwymiarowej mapie
+podzielonej na pola. Jego zadaniem jest wykonanie zdjęć $K$ celów
+rozmieszczonych na mapie i powrót do bazy. Misję utrudniają:
+
+\begin{itemize}
+  \item \textbf{ograniczona bateria} -- każdy krok zużywa energię, a jej
+        uzupełnienie jest możliwe wyłącznie na stacjach ładowania, które nie
+        leżą na najkrótszych trasach między celami;
+  \item \textbf{przeszkody statyczne} -- budynki, przez które nie można przelecieć;
+  \item \textbf{strefy radarowe} -- przebywanie w nich skraca trasę, ale w
+        każdym kroku grozi wykryciem drona i niepowodzeniem misji;
+  \item \textbf{patrol} -- przeszkoda dynamiczna poruszająca się cyklicznie
+        po stałej trasie; kontakt z patrolem kończy misję;
+  \item \textbf{zdarzenie zależne od decyzji agenta} -- sfotografowanie
+        celu nr~1 powoduje zamknięcie wybranego korytarza (pole $Z$), co może
+        odciąć krótszą drogę do pozostałych celów.
+\end{itemize}
+
+Agent nie zna z góry modelu środowiska (prawdopodobieństwa wykrycia, skutków
+zdarzeń) -- uczy się wyłącznie na podstawie interakcji. Projekt zakłada kilka
+map o rosnącej trudności (\emph{easy}, \emph{medium}, \emph{hard}).
+Przykładową mapę pokazano na rys.~\ref{fig:map-easy}.
+
+\begin{figure}[h]
+  \centering
+  \input{figures/map_easy}
+  \caption{Robocza mapa \emph{easy} ($10\times10$). B -- baza, 1--3 -- cele,
+    L -- stacje ładowania, czerwone pola -- strefy radarowe, Z -- korytarz
+    zamykany po sfotografowaniu celu~1, czarne pola -- przeszkody, fioletowa
+    linia -- trasa patrolu (ruch tam i z powrotem).}
+  \label{fig:map-easy}
+\end{figure}
+
+\paragraph{Dylemat zaprojektowany na mapie \emph{easy}.} Cel~1 leży najbliżej
+bazy (6~kroków), ale jego sfotografowanie zamyka korytarz $Z$. Po tym
+zdarzeniu jedyna droga do celu~2 prowadzi przez strefę radarową. Bezpieczna
+kolejność to 2~$\rightarrow$~3~$\rightarrow$~1~$\rightarrow$~baza
+(ok.\ 46 kroków po trasach omijających radary), co przekracza pojemność
+baterii $E_{\max}=30$ -- agent musi więc dodatkowo zaplanować ładowanie.
+Strategia zachłanna („najpierw najbliższy cel'') prowadzi natomiast do
+konieczności lotu przez radar. Wartości zmierzono algorytmem BFS na mapie
+z rys.~\ref{fig:map-easy}, bez uwzględnienia patrolu.
+
+\paragraph{Cel agenta.} Wykonać zdjęcia wszystkich celów i wrócić do bazy
+w możliwie małej liczbie kroków, nie dopuszczając do wykrycia ani do
+rozładowania baterii.

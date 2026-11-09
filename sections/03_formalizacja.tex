@@ -1,0 +1,176 @@
+\section{Formalizacja RL/MDP}
+\label{sec:formalizacja}
+
+Problem modelujemy jako epizodyczny proces decyzyjny Markowa
+$(\mathcal{S}, \mathcal{A}, P, R, \gamma)$.
+
+\subsection{Agent i środowisko}
+
+\begin{itemize}
+  \item \textbf{Agent} -- dron; w każdym kroku wybiera jedną akcję.
+  \item \textbf{Środowisko} -- mapa $W \times H$ wraz z bazą, celami,
+        stacjami ładowania, przeszkodami, strefami radarowymi, patrolem
+        i korytarzem zamykanym. Środowisko przechowuje bieżący stan, wykonuje
+        przejścia i zwraca nagrody.
+\end{itemize}
+
+\subsection{Stan}
+
+Stan agenta to krotka
+\begin{equation}
+  s = (x,\; y,\; e,\; m,\; \varphi),
+\end{equation}
+gdzie:
+\begin{itemize}
+  \item $(x, y)$ -- pozycja drona na mapie,
+  \item $e \in \{0, 1, \dots, E_{\max}\}$ -- poziom baterii,
+  \item $m \in \{0,1\}^K$ -- maska bitowa sfotografowanych celów,
+  \item $\varphi \in \{0, \dots, T_p - 1\}$ -- faza patrolu
+        ($\varphi = t \bmod T_p$, gdzie $T_p$ to okres trasy patrolu).
+\end{itemize}
+
+\paragraph{Dlaczego faza patrolu jest w stanie?} Pozycja patrolu zależy od
+czasu. Gdyby $\varphi$ nie było częścią stanu, ten sam stan $(x,y,e,m)$
+prowadziłby do różnych skutków w zależności od chwili, w której agent się
+w nim znalazł -- własność Markowa nie byłaby spełniona. Pozycję patrolu da się
+odtworzyć z $\varphi$, więc nie trzeba jej przechowywać osobno.
+
+\paragraph{Dlaczego stan korytarza $Z$ nie jest w stanie?} Korytarz jest
+zamknięty dokładnie wtedy, gdy sfotografowano cel~1, czyli gdy $m_1 = 1$.
+Informacja ta jest już zawarta w masce $m$. Gdyby zdarzenie zależało od innego
+warunku (np. czasu), stan należałoby rozszerzyć o dodatkową flagę.
+
+\paragraph{Rozmiar przestrzeni stanów.} Górne oszacowanie wynosi
+\begin{equation}
+  |\mathcal{S}| \le W \cdot H \cdot (E_{\max}+1) \cdot 2^K \cdot T_p .
+\end{equation}
+Dla mapy \emph{easy} ($10\times10$, $E_{\max}=30$, $K=3$, $T_p=6$) daje to
+$100 \cdot 31 \cdot 8 \cdot 6 = 148\,800$ stanów, a po uwzględnieniu
+$|\mathcal{A}| = 5$ około $7{,}4 \cdot 10^5$ wartości $Q(s,a)$. Taka tablica
+mieści się w pamięci (kilka MB), więc podejście tablicowe jest wykonalne.
+Faktycznie osiągalnych stanów jest mniej, ponieważ pola z przeszkodami
+nie są dostępne.
+
+\subsection{Akcje}
+
+\[
+  \mathcal{A} = \{\textsc{góra},\ \textsc{dół},\ \textsc{lewo},\ \textsc{prawo},\ \textsc{czekaj}\}.
+\]
+
+\begin{itemize}
+  \item Ruch na pole poza mapą, na przeszkodę lub na zamknięty korytarz jest
+        \textbf{akcją niepoprawną}: dron pozostaje na miejscu, zużywa energię
+        i otrzymuje dodatkową karę.
+  \item \textsc{czekaj} na stacji ładowania zwiększa energię o $\Delta_L$
+        (do $E_{\max}$). Poza stacją oznacza zawis i zużywa energię jak ruch.
+        Akcja ta pozwala też przeczekać przejście patrolu.
+\end{itemize}
+
+\subsection{Przejście (pojedynczy krok interakcji)}
+
+W kroku $t$ środowisko wykonuje kolejno:
+\begin{enumerate}
+  \item wyznaczenie nowej pozycji na podstawie akcji $a_t$ (z obsługą akcji
+        niepoprawnych),
+  \item aktualizację energii: $e \leftarrow e - 1$ albo
+        $e \leftarrow \min(e + \Delta_L, E_{\max})$ przy ładowaniu,
+  \item przesunięcie patrolu: $\varphi \leftarrow (\varphi + 1) \bmod T_p$,
+  \item sprawdzenie kolizji z patrolem (również „minięcia się'' na sąsiednich
+        polach, gdy dron i patrol zamieniają się miejscami),
+  \item jeżeli dron jest na niesfotografowanym celu $i$ -- ustawienie $m_i = 1$
+        (dla $i=1$ zamknięcie korytarza $Z$),
+  \item jeżeli dron jest w strefie radarowej -- losowanie wykrycia
+        z prawdopodobieństwem $p_{\text{det}}$,
+  \item sprawdzenie warunków zakończenia i zwrócenie $(s_{t+1}, r_{t+1},
+        \textit{terminated}, \textit{truncated})$.
+\end{enumerate}
+
+Interfejs środowiska będzie zgodny z biblioteką Gymnasium~\cite{gymnasium}
+(\texttt{reset()}, \texttt{step(a)}).
+
+\subsection{Funkcja nagrody}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrl}
+  \toprule
+  Zdarzenie & Nagroda & Uzasadnienie \\
+  \midrule
+  każdy krok & $-1$ & zachęca do krótkich tras \\
+  akcja niepoprawna & $-2$ (dodatkowo) & zniechęca do „odbijania się'' od ścian \\
+  sfotografowanie nowego celu & $+10$ & nagroda pośrednia, ułatwia eksplorację \\
+  powrót do bazy ze wszystkimi celami & $+50$ & główny cel misji \\
+  wykrycie, kolizja z patrolem & $-50$ & porażka misji \\
+  rozładowanie baterii & $-50$ & porażka misji \\
+  \bottomrule
+\end{tabular}
+\caption{Wstępna funkcja nagrody (wartości do strojenia po pierwszych testach).}
+\label{tab:reward}
+\end{table}
+
+Kara za porażkę ($-50$) jest celowo równa nagrodzie za sukces, aby agent nie
+wolał szybko zakończyć epizodu porażką zamiast długo latać z karą $-1$ za krok.
+Przy długości epizodu rzędu 40--60 kroków suma kar za kroki jest porównywalna
+z karą za porażkę -- ten balans trzeba sprawdzić eksperymentalnie
+(zob. sekcja~\ref{sec:otwarte}).
+
+\subsection{Warunki zakończenia epizodu}
+
+\begin{itemize}
+  \item \textbf{Sukces} (\textit{terminated}): dron jest w bazie i $m = (1,\dots,1)$.
+  \item \textbf{Porażka} (\textit{terminated}): wykrycie w strefie radarowej,
+        kolizja z patrolem lub $e = 0$ poza bazą.
+  \item \textbf{Przekroczenie limitu} (\textit{truncated}): $t \ge T_{\max}$.
+\end{itemize}
+
+Rozróżnienie \textit{terminated}/\textit{truncated} jest istotne przy
+aktualizacji wartości: po zakończeniu właściwym wartość stanu następnego
+wynosi $0$, natomiast po obcięciu limitem kroków agent nadal powinien
+korzystać z oszacowania $\max_a Q(s_{t+1},a)$.
+
+\subsection{Ograniczenia środowiska}
+
+\begin{itemize}
+  \item energia $E_{\max}$ (wstępnie 30) i przyrost ładowania $\Delta_L$
+        (wstępnie 5 na krok),
+  \item limit kroków $T_{\max}$ (wstępnie 200),
+  \item prawdopodobieństwo wykrycia $p_{\text{det}}$ (wstępnie 0{,}3 na krok),
+  \item brak możliwości wejścia na przeszkody i zamknięty korytarz.
+\end{itemize}
+
+\subsection{Współczynnik dyskontowania}
+
+Wstępnie $\gamma = 0{,}99$. Główna nagroda pojawia się dopiero na końcu
+długiego epizodu, więc zbyt mała wartość $\gamma$ sprawiłaby, że agent
+praktycznie nie odczuwałby nagrody za powrót do bazy. Wpływ $\gamma$ zostanie
+sprawdzony w eksperymentach.
+
+\subsection{Miary sukcesu projektu}
+
+\begin{itemize}
+  \item odsetek misji zakończonych sukcesem (w fazie ewaluacji, bez eksploracji),
+  \item średni zwrot z epizodu,
+  \item średnia długość udanego epizodu,
+  \item odsetek porażek z podziałem na przyczyny (wykrycie, patrol, bateria),
+  \item stabilność wyników między uruchomieniami z różnym ziarnem losowym.
+\end{itemize}
+
+Projekt uznajemy za udany, jeżeli agent uczący się istotnie przewyższa agentów
+bazowych na wszystkich mapach, a zachowanie agenta (np. omijanie radarów,
+planowanie ładowania, kolejność celów) daje się zinterpretować.
+
+\subsection{Elementy wymagające weryfikacji po pierwszych testach}
+\label{sec:otwarte}
+
+\begin{itemize}
+  \item wartości nagród -- czy agent nie uczy się „samobójczych'' polityk
+        albo krążenia w miejscu,
+  \item czy nagroda $+10$ za cel nie powoduje, że agent zbiera cele i nie
+        wraca do bazy,
+  \item wartość $p_{\text{det}}$ -- zbyt duża sprawi, że radary staną się
+        zwykłymi ścianami, zbyt mała -- że będą bez znaczenia,
+  \item czy osiągalna przestrzeń stanów jest wystarczająco mała dla
+        tablicowego Q-learningu na mapie \emph{hard},
+  \item ewentualne dodanie losowego znoszenia drona przez wiatr
+        (dodatkowe źródło niepewności).
+\end{itemize}

@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{gymnasium}
+{Farama Foundation}.
+\newblock Gymnasium -- an api standard for reinforcement learning environments.
+\newblock \url{https://gymnasium.farama.org}.
+\newblock Dostęp: 2026-11-08.
+
+\bibitem{sutton2018}
+Richard~S. Sutton and Andrew~G. Barto.
+\newblock {\em Reinforcement Learning: An Introduction}.
+\newblock MIT Press, 2 edition, 2018.
+
+\end{thebibliography}
