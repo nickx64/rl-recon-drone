@@ -1,26 +1,17 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[12pt]{article}
+\input{article_style.tex}
 
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage[polish]{babel}
-\usepackage{lmodern}
-\usepackage[margin=2.5cm]{geometry}
-\usepackage{amsmath,amssymb}
-\usepackage{booktabs}
-\usepackage{array}
+% Pakiety używane w raporcie, a nieobecne w article_style.tex
 \usepackage{tabularx}
 \usepackage{tikz}
 \usepackage{caption}
-\usepackage{enumitem}
-\usepackage{xcolor}
-\usepackage[hidelinks]{hyperref}
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
 
-\title{Dron zwiadowczy w środowisku gridowym\\
-  \large Projekt z przedmiotu \emph{Uczenie się ze wzmocnieniem}, 2026/2027}
-\author{{Nicolas Liszek 179552}\\Politechnika Rzeszowska, WEiI}
-\date{\today}
+\title{Raport projektowy\\Uczenie się ze wzmocnieniem\\[0.3cm]
+  \large Dron zwiadowczy w środowisku gridowym}
+\author{Nicolas Liszek}
+\date{2026/2027}
 
 \begin{document}
 \maketitle
@@ -35,7 +26,9 @@ jednego z nich zamyka korytarz na mapie. Porównane zostaną agenty bazowe
 \end{abstract}
 
 \tableofcontents
+\newpage
 
+\input{sections/00_informacje}
 \input{sections/01_problem}
 \input{sections/02_uzasadnienie}
 \input{sections/03_formalizacja}

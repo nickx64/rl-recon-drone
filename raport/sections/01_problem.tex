@@ -1,9 +1,8 @@
-\section{Opis problemu}
-\label{sec:problem}
+\section{Temat i cel projektu}
+\label{sec:temat}
 
-\paragraph{Repozytorium projektu.} Projekt jest realizowany w publicznym
-repozytorium GitHub:
-\url{https://github.com/nickx64/rl-recon-drone}.
+\subsection{Opis problemu}
+\label{sec:problem}
 
 Dron zwiadowczy startuje z bazy umieszczonej na dwuwymiarowej mapie
 podzielonej na pola. Jego zadaniem jest wykonanie zdjęć $K$ celów
@@ -48,6 +47,13 @@ Strategia zachłanna („najpierw najbliższy cel'') prowadzi natomiast do
 konieczności lotu przez radar. Wartości zmierzono algorytmem BFS na mapie
 z rys.~\ref{fig:map-easy}, bez uwzględnienia patrolu.
 
-\paragraph{Cel agenta.} Wykonać zdjęcia wszystkich celów i wrócić do bazy
-w możliwie małej liczbie kroków, nie dopuszczając do wykrycia ani do
-rozładowania baterii.
+\subsection{Cel agenta}
+\label{sec:cel}
+
+Agent ma wykonać zdjęcia wszystkich celów i wrócić do bazy w możliwie małej
+liczbie kroków, nie dopuszczając do wykrycia, kolizji z patrolem ani do
+rozładowania baterii. Działanie agenta uznajemy za poprawne, jeżeli epizod
+kończy się sukcesem w rozumieniu sekcji~\ref{sec:koniec}, a za skuteczne --
+jeżeli w fazie ewaluacji (bez eksploracji) agent osiąga sukces w większości
+epizodów przy długości trasy zbliżonej do najkrótszej bezpiecznej trasy
+z ładowaniem. Szczegółowe miary podano w sekcji~\ref{sec:miary}.

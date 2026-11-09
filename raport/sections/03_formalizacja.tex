@@ -1,4 +1,4 @@
-\section{Formalizacja RL/MDP}
+\section{Formalizacja problemu RL/MDP}
 \label{sec:formalizacja}
 
 Problem modelujemy jako epizodyczny proces decyzyjny Markowa
@@ -14,20 +14,39 @@ $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$.
         przejścia i zwraca nagrody.
 \end{itemize}
 
-\subsection{Stan}
+\subsection{Stan lub obserwacja}
 
-Stan agenta to krotka
+Stan środowiska to krotka
 \begin{equation}
   s = (x,\; y,\; e,\; m,\; \varphi),
 \end{equation}
-gdzie:
-\begin{itemize}
-  \item $(x, y)$ -- pozycja drona na mapie,
-  \item $e \in \{0, 1, \dots, E_{\max}\}$ -- poziom baterii,
-  \item $m \in \{0,1\}^K$ -- maska bitowa sfotografowanych celów,
-  \item $\varphi \in \{0, \dots, T_p - 1\}$ -- faza patrolu
-        ($\varphi = t \bmod T_p$, gdzie $T_p$ to okres trasy patrolu).
-\end{itemize}
+której składowe opisano w tabeli~\ref{tab:stan}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{0.30\textwidth}p{0.60\textwidth}}
+\toprule
+Składowa stanu/obserwacji & Znaczenie \\
+\midrule
+$(x, y)$ & pozycja drona na mapie \\
+$e \in \{0, 1, \dots, E_{\max}\}$ & poziom baterii \\
+$m \in \{0,1\}^K$ & maska bitowa sfotografowanych celów
+  ($m_i = 1$ -- cel $i$ został sfotografowany) \\
+$\varphi \in \{0, \dots, T_p - 1\}$ & faza patrolu, $\varphi = t \bmod T_p$,
+  gdzie $T_p$ to okres trasy patrolu \\
+\bottomrule
+\end{tabular}
+\caption{Składowe stanu.}
+\label{tab:stan}
+\end{table}
+
+\paragraph{Stan a obserwacja.} Agent obserwuje pełny stan $s$, więc problem
+jest w pełni obserwowalnym MDP. Agent nie dostaje natomiast informacji
+o modelu środowiska: nie zna układu mapy, trasy patrolu, wartości
+$p_{\text{det}}$ ani skutków sfotografowania celu~1. Elementy te należą do
+dynamiki przejść $P$, a nie do stanu, i agent poznaje je wyłącznie pośrednio,
+przez obserwowane przejścia i nagrody. Pozycja patrolu nie jest podawana
+wprost, ponieważ wynika jednoznacznie z fazy $\varphi$.
 
 \paragraph{Dlaczego faza patrolu jest w stanie?} Pozycja patrolu zależy od
 czasu. Gdyby $\varphi$ nie było częścią stanu, ten sam stan $(x,y,e,m)$
@@ -57,14 +76,30 @@ nie są dostępne.
   \mathcal{A} = \{\textsc{góra},\ \textsc{dół},\ \textsc{lewo},\ \textsc{prawo},\ \textsc{czekaj}\}.
 \]
 
-\begin{itemize}
-  \item Ruch na pole poza mapą, na przeszkodę lub na zamknięty korytarz jest
-        \textbf{akcją niepoprawną}: dron pozostaje na miejscu, zużywa energię
-        i otrzymuje dodatkową karę.
-  \item \textsc{czekaj} na stacji ładowania zwiększa energię o $\Delta_L$
-        (do $E_{\max}$). Poza stacją oznacza zawis i zużywa energię jak ruch.
-        Akcja ta pozwala też przeczekać przejście patrolu.
-\end{itemize}
+\begin{table}[h]
+\centering
+\begin{tabular}{p{0.30\textwidth}p{0.60\textwidth}}
+\toprule
+Akcja & Opis \\
+\midrule
+\textsc{góra} & ruch o jedno pole w górę \\
+\textsc{dół} & ruch o jedno pole w dół \\
+\textsc{lewo} & ruch o jedno pole w lewo \\
+\textsc{prawo} & ruch o jedno pole w prawo \\
+\textsc{czekaj} & pozostanie na miejscu; na stacji ładowania zwiększa energię
+  o $\Delta_L$ (do $E_{\max}$), poza stacją oznacza zawis i zużywa energię
+  jak ruch; pozwala przeczekać przejście patrolu \\
+\bottomrule
+\end{tabular}
+\caption{Zbiór akcji agenta.}
+\label{tab:akcje}
+\end{table}
+
+Wszystkie akcje są dostępne w każdym stanie, dzięki czemu zbiór
+$\mathcal{A}$ jest stały, a tablica $Q$ ma prostą strukturę. Ruch na pole
+poza mapą, na przeszkodę lub na zamknięty korytarz jest \textbf{akcją
+niepoprawną}: dron pozostaje na miejscu, zużywa energię i otrzymuje
+dodatkową karę.
 
 \subsection{Przejście (pojedynczy krok interakcji)}
 
@@ -89,10 +124,22 @@ Interfejs środowiska będzie zgodny z biblioteką Gymnasium~\cite{gymnasium}
 (\texttt{reset()}, \texttt{step(a)}).
 
 \subsection{Funkcja nagrody}
+\label{sec:nagroda}
+
+Nagroda otrzymana po wykonaniu akcji $a_t$ w stanie $s_t$ wynosi
+\begin{equation}
+  r_{t+1} = -1
+    - 2 \cdot \mathbf{1}[\text{akcja niepoprawna}]
+    + 10 \cdot \mathbf{1}[\text{nowy cel}]
+    + 50 \cdot \mathbf{1}[\text{sukces}]
+    - 50 \cdot \mathbf{1}[\text{porażka}],
+\end{equation}
+gdzie $\mathbf{1}[\cdot]$ jest funkcją wskaźnikową, a zdarzenia
+i uzasadnienie wartości zebrano w tabeli~\ref{tab:reward}.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lrl}
+\begin{tabularx}{\textwidth}{>{\raggedright}p{0.36\textwidth} r >{\raggedright\arraybackslash}X}
   \toprule
   Zdarzenie & Nagroda & Uzasadnienie \\
   \midrule
@@ -103,18 +150,48 @@ Interfejs środowiska będzie zgodny z biblioteką Gymnasium~\cite{gymnasium}
   wykrycie, kolizja z patrolem & $-50$ & porażka misji \\
   rozładowanie baterii & $-50$ & porażka misji \\
   \bottomrule
-\end{tabular}
+\end{tabularx}
 \caption{Wstępna funkcja nagrody (wartości do strojenia po pierwszych testach).}
 \label{tab:reward}
 \end{table}
 
-Kara za porażkę ($-50$) jest celowo równa nagrodzie za sukces, aby agent nie
-wolał szybko zakończyć epizodu porażką zamiast długo latać z karą $-1$ za krok.
-Przy długości epizodu rzędu 40--60 kroków suma kar za kroki jest porównywalna
-z karą za porażkę -- ten balans trzeba sprawdzić eksperymentalnie
-(zob. sekcja~\ref{sec:otwarte}).
+\paragraph{Kara za krok.} Kara $-1$ za każdy krok, także za ładowanie
+i zawis, sprawia, że krótsza trasa daje wyższy zwrot. Udana misja na mapie
+\emph{easy} (ok.~50 kroków razem z ładowaniem) daje zwrot około
+$-50 + 3 \cdot 10 + 50 = +30$, czyli wyraźnie więcej niż dowolna porażka.
+
+\paragraph{Ograniczenia twarde i miękkie.} Ograniczenia \emph{twarde} są
+narzucone przez środowisko niezależnie od nagrody: granice mapy, przeszkody
+i zamknięty korytarz $Z$ (ruch jest niemożliwy) oraz rozładowanie baterii,
+kolizja z patrolem i limit kroków (koniec epizodu). Ograniczeniem
+\emph{miękkim} są strefy radarowe: wejście do nich jest dozwolone, ale wiąże
+się z ryzykiem wykrycia, a o tym, czy skrót się opłaca, agent decyduje na
+podstawie oczekiwanego zwrotu. Miękka jest także kara $-2$ za akcję
+niepoprawną -- zniechęca do niej, ale jej nie zabrania.
+
+\paragraph{Czy nagroda nie zachęca do niepożądanego zachowania?}
+\begin{itemize}
+  \item Nagroda $+10$ jest przyznawana tylko za \emph{nowy} cel
+        ($m_i$ zmienia się z $0$ na $1$), więc nie da się jej zbierać
+        wielokrotnie, krążąc wokół celu.
+  \item Ładowanie nie jest nagradzane, więc agent nie ma powodu ładować się
+        ponad potrzebę.
+  \item Zebranie celów bez powrotu kończy się porażką lub obcięciem epizodu,
+        więc powrót do bazy zawsze się opłaca.
+  \item \textbf{Ryzyko: porażka może być atrakcyjniejsza niż długie
+        przetrwanie.} Agent, który nie potrafi jeszcze ukończyć misji
+        i krąży (np. ładując się na stacji) aż do limitu $T_{\max} = 200$,
+        uzyskuje zwrot około $-200$, natomiast szybkie wejście w strefę
+        radarową kończy się zwrotem rzędu $-55$. Suma kar za kroki może więc
+        przewyższyć karę za porażkę i na wczesnym etapie uczenia agent może
+        nauczyć się celowego kończenia epizodu. Możliwe przeciwdziałania to
+        zmniejszenie kary za krok (np. do $-0{,}1$), zwiększenie kary za
+        porażkę albo skrócenie $T_{\max}$. Wybór zostanie dokonany po
+        pierwszych testach (zob. sekcja~\ref{sec:otwarte}).
+\end{itemize}
 
 \subsection{Warunki zakończenia epizodu}
+\label{sec:koniec}
 
 \begin{itemize}
   \item \textbf{Sukces} (\textit{terminated}): dron jest w bazie i $m = (1,\dots,1)$.
@@ -128,8 +205,31 @@ aktualizacji wartości: po zakończeniu właściwym wartość stanu następnego
 wynosi $0$, natomiast po obcięciu limitem kroków agent nadal powinien
 korzystać z oszacowania $\max_a Q(s_{t+1},a)$.
 
-\subsection{Ograniczenia środowiska}
+\subsection{Założenia i ograniczenia środowiska}
 
+\paragraph{Uproszczenia modelu.}
+\begin{itemize}
+  \item Przestrzeń jest dyskretna (siatka), dron porusza się w czterech
+        kierunkach o jedno pole; pominięto wysokość lotu, prędkość
+        i bezwładność.
+  \item Każdy krok trwa tyle samo i kosztuje tyle samo energii, niezależnie
+        od kierunku oraz od tego, czy dron leci, czy wisi w miejscu.
+  \item Ruch jest deterministyczny -- nie modelujemy wiatru ani błędów
+        sterowania (wiatr jest rozważany jako rozszerzenie).
+  \item Zdjęcie jest wykonywane automatycznie i natychmiast po wejściu na pole
+        celu; pominięto orientację kamery i warunki widoczności.
+  \item Wykrycie w strefie radarowej to niezależne losowanie w każdym kroku
+        ze stałym prawdopodobieństwem $p_{\text{det}}$, bez zależności od
+        odległości od radaru ani czasu przebywania w strefie.
+  \item Występuje jeden patrol poruszający się po stałej, cyklicznej trasie,
+        który nie reaguje na drona.
+  \item Mapa jest statyczna z wyjątkiem korytarza $Z$; stacje ładowania mają
+        nieograniczoną pojemność i stałe tempo ładowania.
+  \item Agent obserwuje pełny stan -- pominięto szum czujników i ograniczone
+        pole widzenia.
+\end{itemize}
+
+\paragraph{Parametry środowiska.}
 \begin{itemize}
   \item energia $E_{\max}$ (wstępnie 30) i przyrost ładowania $\Delta_L$
         (wstępnie 5 na krok),
@@ -146,6 +246,7 @@ praktycznie nie odczuwałby nagrody za powrót do bazy. Wpływ $\gamma$ zostanie
 sprawdzony w eksperymentach.
 
 \subsection{Miary sukcesu projektu}
+\label{sec:miary}
 
 \begin{itemize}
   \item odsetek misji zakończonych sukcesem (w fazie ewaluacji, bez eksploracji),
@@ -164,7 +265,8 @@ planowanie ładowania, kolejność celów) daje się zinterpretować.
 
 \begin{itemize}
   \item wartości nagród -- czy agent nie uczy się „samobójczych'' polityk
-        albo krążenia w miejscu,
+        albo krążenia w miejscu; w szczególności bilans kary za krok i kary
+        za porażkę (sekcja~\ref{sec:nagroda}),
   \item czy nagroda $+10$ za cel nie powoduje, że agent zbiera cele i nie
         wraca do bazy,
   \item wartość $p_{\text{det}}$ -- zbyt duża sprawi, że radary staną się

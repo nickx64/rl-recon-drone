@@ -1,21 +1,28 @@
 \babel@toc {polish}{}\relax 
-\contentsline {section}{\numberline {1}Opis problemu}{1}{section.1}%
-\contentsline {paragraph}{Repozytorium projektu.}{1}{section*.2}%
-\contentsline {paragraph}{Dylemat zaprojektowany na mapie \emph {easy}.}{2}{section*.4}%
-\contentsline {paragraph}{Cel agenta.}{2}{section*.5}%
-\contentsline {section}{\numberline {2}Uzasadnienie zastosowania uczenia się ze wzmocnieniem}{2}{section.2}%
-\contentsline {section}{\numberline {3}Formalizacja RL/MDP}{3}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Agent i środowisko}{3}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Stan}{3}{subsection.3.2}%
-\contentsline {paragraph}{Dlaczego faza patrolu jest w stanie?}{3}{section*.6}%
-\contentsline {paragraph}{Dlaczego stan korytarza $Z$ nie jest w stanie?}{3}{section*.7}%
-\contentsline {paragraph}{Rozmiar przestrzeni stanów.}{4}{section*.8}%
-\contentsline {subsection}{\numberline {3.3}Akcje}{4}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Przejście (pojedynczy krok interakcji)}{4}{subsection.3.4}%
-\contentsline {subsection}{\numberline {3.5}Funkcja nagrody}{4}{subsection.3.5}%
-\contentsline {subsection}{\numberline {3.6}Warunki zakończenia epizodu}{5}{subsection.3.6}%
-\contentsline {subsection}{\numberline {3.7}Ograniczenia środowiska}{5}{subsection.3.7}%
-\contentsline {subsection}{\numberline {3.8}Współczynnik dyskontowania}{5}{subsection.3.8}%
-\contentsline {subsection}{\numberline {3.9}Miary sukcesu projektu}{5}{subsection.3.9}%
-\contentsline {subsection}{\numberline {3.10}Elementy wymagające weryfikacji po pierwszych testach}{5}{subsection.3.10}%
-\contentsline {section}{\numberline {4}Wsparcie AI}{6}{section.4}%
+\contentsline {section}{\numberline {1}Informacje podstawowe}{2}{section.1}%
+\contentsline {section}{\numberline {2}Temat i cel projektu}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Opis problemu}{2}{subsection.2.1}%
+\contentsline {paragraph}{Dylemat zaprojektowany na mapie \emph {easy}.}{2}{section*.3}%
+\contentsline {subsection}{\numberline {2.2}Cel agenta}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Uzasadnienie zastosowania uczenia się ze wzmocnieniem}{3}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Formalizacja problemu RL/MDP}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Agent i środowisko}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Stan lub obserwacja}{4}{subsection.3.2}%
+\contentsline {paragraph}{Stan a obserwacja.}{4}{section*.5}%
+\contentsline {paragraph}{Dlaczego faza patrolu jest w stanie?}{4}{section*.6}%
+\contentsline {paragraph}{Dlaczego stan korytarza $Z$ nie jest w stanie?}{4}{section*.7}%
+\contentsline {paragraph}{Rozmiar przestrzeni stanów.}{5}{section*.8}%
+\contentsline {subsection}{\numberline {3.3}Akcje}{5}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Przejście (pojedynczy krok interakcji)}{5}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Funkcja nagrody}{6}{subsection.3.5}%
+\contentsline {paragraph}{Kara za krok.}{6}{section*.11}%
+\contentsline {paragraph}{Ograniczenia twarde i miękkie.}{6}{section*.12}%
+\contentsline {paragraph}{Czy nagroda nie zachęca do niepożądanego zachowania?}{6}{section*.13}%
+\contentsline {subsection}{\numberline {3.6}Warunki zakończenia epizodu}{7}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}Założenia i ograniczenia środowiska}{7}{subsection.3.7}%
+\contentsline {paragraph}{Uproszczenia modelu.}{7}{section*.14}%
+\contentsline {paragraph}{Parametry środowiska.}{7}{section*.15}%
+\contentsline {subsection}{\numberline {3.8}Współczynnik dyskontowania}{8}{subsection.3.8}%
+\contentsline {subsection}{\numberline {3.9}Miary sukcesu projektu}{8}{subsection.3.9}%
+\contentsline {subsection}{\numberline {3.10}Elementy wymagające weryfikacji po pierwszych testach}{8}{subsection.3.10}%
+\contentsline {section}{\numberline {4}Wsparcie AI}{8}{section.4}%
